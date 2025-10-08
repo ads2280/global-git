@@ -7,8 +7,9 @@ git-español is a wrapper that lets you use Git commands in Spanish. That's it. 
 Want to git cometer instead of git commit? Now you can. Feel like doing a git empujar instead of git push? Go wild.
 Installation
 bash# TODO: add installation instructions
-# (we were too busy vibecoding to write this part yet)
-Uso (Usage)
+(we were too busy vibecoding to write this part yet)
+
+## Uso (Usage)
 Instead of this:
 bashgit commit -m "fix: typo in readme"
 git push origin main
@@ -26,7 +27,7 @@ Confuses your coworkers in the best way
 Proves that programming doesn't have to be English-only
 Born from procrastination and "actually down" energy
 
-Inspiración
+## Inspiración
 Shoutout to git-global for proving this concept works. We're just doing it con sabor.
 Contributing
 PRs welcome! Especially if you want to add more Spanish commands or make this work with other languages.
@@ -36,5 +37,6 @@ MIT or whatever. Just don't be weird about it.
 Credits
 Created during a "matcha time" break by people who were waiting for tests to run and decided to vibe code instead.
 
-¿Preguntas? ¿Problemas? ¿Quieres agregar más idiomas? Open an issue or PR. We'll probably respond between test runs.
+## ¿Preguntas? ¿Problemas? ¿Quieres agregar más idiomas? 
+Open an issue or PR. We'll probably respond between test runs.
 Nota: This is a real project that actually works, not just a meme. Probably. We think. (It will be once we finish it.)
