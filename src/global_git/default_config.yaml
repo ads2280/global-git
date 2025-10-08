@@ -20,7 +20,63 @@
         "-m": "-m",
         "--version": "--version"
       }
+    },
+    "fr": {
+      "commands": {
+        "valider": "commit",
+        "pousser": "push",
+        "tirer": "pull",
+        "branche": "branch",
+        "ajouter": "add",
+        "cloner": "clone",
+        "statut": "status",
+        "fusionner": "merge",
+        "rebaser": "rebase"
+      },
+      "flags": {
+        "--aide": "--help",
+        "-a": "-a",
+        "-m": "-m",
+        "--version": "--version"
+      }
+    },
+    "ja": {
+      "commands": {
+        "コミット": "commit",
+        "プッシュ": "push",
+        "プル": "pull",
+        "ブランチ": "branch",
+        "追加": "add",
+        "クローン": "clone",
+        "ステータス": "status",
+        "マージ": "merge",
+        "リベース": "rebase"
+      },
+      "flags": {
+        "--ヘルプ": "--help",
+        "-a": "-a",
+        "-m": "-m",
+        "--バージョン": "--version"
+      }
+    },
+    "ru": {
+      "commands": {
+        "закоммитить": "commit",
+        "отправить": "push",
+        "получить": "pull",
+        "ветка": "branch",
+        "добавить": "add",
+        "клонировать": "clone",
+        "статус": "status",
+        "слияние": "merge",
+        "ребейз": "rebase"
+      },
+      "flags": {
+        "--помощь": "--help",
+        "-a": "-a",
+        "-m": "-m",
+        "--версия": "--version"
+      }
     }
   }
 }
-
