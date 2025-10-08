@@ -1,0 +1,26 @@
+{
+  "languages": {
+    "es": {
+      "commands": {
+        "cometer": "commit",
+        "empujar": "push",
+        "jalar": "pull",
+        "rama": "branch",
+        "añadir": "add",
+        "anadir": "add",
+        "clonar": "clone",
+        "estado": "status",
+        "fusionar": "merge",
+        "rebasear": "rebase",
+        "rebasar": "rebase"
+      },
+      "flags": {
+        "--ayuda": "--help",
+        "-a": "-a",
+        "-m": "-m",
+        "--version": "--version"
+      }
+    }
+  }
+}
+

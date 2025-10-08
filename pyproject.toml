@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "global-git"
+version = "0.1.0"
+description = "A friendly Git wrapper that understands non-English commands and flags."
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [{ name = "Global Git Maintainers" }]
+keywords = ["git", "cli", "wrapper", "localization", "aliases"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.8",
+  "License :: OSI Approved :: MIT License",
+  "Environment :: Console",
+  "Topic :: Software Development :: Version Control :: Git",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"global_git" = ["default_config.yaml"]
+
+[project.scripts]
+# Intentionally install a shim named `git` that wraps the real git binary.
+git = "global_git.cli:main"
+global-git-post-install = "global_git.post_install:main"
+
