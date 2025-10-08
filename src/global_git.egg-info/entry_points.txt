@@ -1,0 +1,3 @@
+[console_scripts]
+git = global_git.cli:main
+global-git-post-install = global_git.post_install:main
