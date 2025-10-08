@@ -61,7 +61,7 @@ Why not? Also:
 
 ## Inspiración
 
-Shoutout to `git-global` for proving this concept works. We're just doing it con sabor.
+Isaac
 
 ## Contributing
 
