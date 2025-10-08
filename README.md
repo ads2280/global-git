@@ -22,10 +22,10 @@ More commands coming soon™
 Why though?
 Why not? Also:
 
-Makes your git history more interesting
-Confuses your coworkers in the best way
-Proves that programming doesn't have to be English-only
-Born from procrastination and "actually down" energy
+- Makes your git history more interesting
+- Confuses your coworkers in the best way
+- Proves that programming doesn't have to be English-only
+- Born from procrastination and "actually down" energy
 
 ## Inspiración
 Shoutout to git-global for proving this concept works. We're just doing it con sabor.
