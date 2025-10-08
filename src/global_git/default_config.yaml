@@ -77,6 +77,44 @@
         "-m": "-m",
         "--версия": "--version"
       }
+    },
+    "de": {
+      "commands": {
+        "committen": "commit",
+        "schieben": "push",
+        "ziehen": "pull",
+        "zweig": "branch",
+        "hinzufügen": "add",
+        "klonen": "clone",
+        "status": "status",
+        "zusammenführen": "merge",
+        "rebasen": "rebase"
+      },
+      "flags": {
+        "--hilfe": "--help",
+        "-a": "-a",
+        "-m": "-m",
+        "--version": "--version"
+      }
+    },
+    "pt": {
+      "commands": {
+        "confirmar": "commit",
+        "enviar": "push",
+        "puxar": "pull",
+        "ramo": "branch",
+        "adicionar": "add",
+        "clonar": "clone",
+        "status": "status",
+        "mesclar": "merge",
+        "rebasear": "rebase"
+      },
+      "flags": {
+        "--ajuda": "--help",
+        "-a": "-a",
+        "-m": "-m",
+        "--versao": "--version"
+      }
     }
   }
 }
