@@ -277,6 +277,52 @@
         "-q": "-q",
         "--silencioso": "--quiet"
       }
+    },
+    "en-gb": {
+      "commands": {
+        "honour": "commit",
+        "dispatch": "push",
+        "requisition": "pull",
+        "bough": "branch",
+        "append": "add",
+        "replicate": "clone",
+        "enquire": "status",
+        "amalgamate": "merge",
+        "reorganise": "rebase",
+        "procure": "checkout",
+        "collect": "fetch",
+        "chronicle": "log",
+        "contrast": "diff",
+        "reinstate": "reset",
+        "label": "tag",
+        "secrete": "stash",
+        "exhibit": "show",
+        "distant": "remote",
+        "commence": "init",
+        "configure": "config"
+      },
+      "flags": {
+        "--assistance": "--help",
+        "-a": "-a",
+        "-m": "-m",
+        "--version": "--version",
+        "-b": "-b",
+        "-d": "-d",
+        "-f": "-f",
+        "--compel": "--force",
+        "--altogether": "--all",
+        "--diagram": "--graph",
+        "--single-line": "--oneline",
+        "--firm": "--hard",
+        "--gentle": "--soft",
+        "--blended": "--mixed",
+        "-u": "-u",
+        "--establish-upstream": "--set-upstream",
+        "-v": "-v",
+        "--loquacious": "--verbose",
+        "-q": "-q",
+        "--taciturn": "--quiet"
+      }
     }
   }
 }

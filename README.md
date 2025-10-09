@@ -6,9 +6,9 @@ Finally, you can use Git commands in Spanish without your computer yelling at yo
 
 ## ¿Qué es esto?
 
-git-español is a wrapper that lets you use Git commands in Spanish. That's it. That's the repo.
+global-git is a wrapper that lets you use Git commands in multiple languages. That's it. That's the repo.
 
-Want to `git cometer` instead of `git commit`? Now you can. Feel like doing a `git empujar` instead of `git push`? Go wild.
+Want to `git cometer` instead of `git commit`? Now you can. Feel like doing a `git empujar` instead of `git push`? Go wild. Prefer to `git honour` your changes in proper British English? Jolly good!
 
 ## Installation
 
@@ -42,32 +42,50 @@ git cometer -m "arreglo: error en readme"
 git empujar origin principal
 ```
 
+Or this (British English):
+```bash
+git honour -m "fix: typo in readme"
+git dispatch origin main
+```
+
 ## Comandos Disponibles (Available Commands)
 
-**git cometer** → `git commit` - You're committing to your code, Spanish style
+### Supported Languages
 
-**git empujar** → `git push` - Push it real good
+- **Spanish (es)**: `git cometer`, `git empujar`, `git jalar`
+- **French (fr)**: `git valider`, `git pousser`, `git tirer`
+- **German (de)**: `git committen`, `git schieben`, `git ziehen`
+- **Portuguese (pt)**: `git confirmar`, `git enviar`, `git puxar`
+- **Russian (ru)**: `git закоммитить`, `git отправить`, `git получить`
+- **Japanese (ja)**: `git コミット`, `git プッシュ`, `git プル`
+- **British English (en-gb)**: `git honour`, `git dispatch`, `git requisition` 🇬🇧
 
-**git jalar** → `git pull` - The opposite of empujar, obviously
+### Example Commands
 
-**git rama** → `git branch` - Branch out, pero en español
+**git cometer** / **git honour** → `git commit` - Commit with international flair
 
-**git añadir** → `git add` - Add files with flair
+**git empujar** / **git dispatch** → `git push` - Push it properly
 
-**git clonar** → `git clone` - Same word, different vibe
+**git jalar** / **git requisition** → `git pull` - Pull with panache
 
-**git estado** → `git status` - Check your estado
+**git rama** / **git bough** → `git branch` - Branch in style
 
-**git fusionar** → `git merge` - Merge conflicts hit different in Spanish
+**git añadir** / **git append** → `git add` - Add files eloquently
 
-*More commands coming soon™*
+**git estado** / **git enquire** → `git status` - Check your status politely
+
+**git fusionar** / **git amalgamate** → `git merge` - Merge with sophistication
+
+*And many more! Check default_config.yaml for the full list.*
 
 ### Flags too
 
 Flags are translated when possible:
 
-- `--alluda` → `--help` (because spelling is hard sometimes)
-- `--ayuda` → `--help`
+- `--ayuda` → `--help` (Spanish)
+- `--assistance` → `--help` (British)
+- `--loquacious` → `--verbose` (British, naturally)
+- `--compel` → `--force` (British)
 - Values like `--color=always` keep their value when translated
 
 You can disable translation for a command by setting `GLOBAL_GIT_BYPASS=1` in the environment.
@@ -97,7 +115,7 @@ Isaac
 
 ## Contributing
 
-PRs welcome! Especially if you want to add more Spanish commands or make this work with other languages. 
+PRs welcome! Want to add more languages, commands, or make git even more delightfully verbose in British English? Go for it!
 
 No gatekeeping here—whether you're a native speaker or just learning, all contributions are válidas.
 
