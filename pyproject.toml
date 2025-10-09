@@ -33,5 +33,5 @@ where = ["src"]
 [project.scripts]
 # Intentionally install a shim named `git` that wraps the real git binary.
 git = "global_git.cli:main"
+gitglobal = "global_git.gitglobal_cli:main"
 global-git-post-install = "global_git.post_install:main"
-

@@ -169,6 +169,16 @@ def main() -> int:
     except ValueError:
         shim_depth = 0
 
+    args = sys.argv[1:]
+    if (
+        args
+        and args[0].lower() == "global"
+        and os.environ.get("GLOBAL_GIT_BYPASS", "0") not in {"1", "true", "True"}
+    ):
+        from .gitglobal_cli import main as gitglobal_main
+
+        return gitglobal_main(args[1:])
+
     if shim_depth >= 3:
         print(
             "global-git: detected repeated shim invocation without locating real git; "
@@ -187,10 +197,10 @@ def main() -> int:
         if not exec_path:
             print("global-git: unable to locate `git` in PATH", file=sys.stderr)
             return 127
-        return subprocess.call([exec_path, *sys.argv[1:]], env=env)
+        return subprocess.call([exec_path, *args], env=env)
 
     cfg = load_config()
-    translated = translate_args(sys.argv[1:], cfg.command_map, cfg.flag_map)
+    translated = translate_args(args, cfg.command_map, cfg.flag_map)
 
     if not exec_path:
         print("global-git: unable to locate the real `git` executable", file=sys.stderr)

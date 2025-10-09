@@ -90,6 +90,18 @@ Flags are translated when possible:
 
 You can disable translation for a command by setting `GLOBAL_GIT_BYPASS=1` in the environment.
 
+## CLI Helper
+
+Run `git global` for a friendly ASCII globe, a quick explanation, and the most useful commands to get started.
+
+The dedicated `gitglobal` helper lets you explore and control language support:
+
+- `gitglobal languages` — list every language and highlight the active ones.
+- `gitglobal show es fr` — display the Spanish and French command/flag mappings.
+- `gitglobal switch ja` — activate Japanese only (use multiple codes for more languages).
+- `gitglobal all` — enable every available language.
+- `gitglobal --ayuda` — show the Spanish command list using the language's own `--help` flag.
+
 ### User configuration
 
 Add your own mappings in `~/.config/global-git/config.json`:
