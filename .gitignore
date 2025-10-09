@@ -1,4 +1,9 @@
-.egg-info
+# Python egg info directories
+*.egg-info/
+
+# Python bytecode files
 *.pyc
-__pycache__
-global_git.egg-info
+__pycache__/
+
+# Specific egg-info (redundant with pattern above, but keeping if you want it explicit)
+global_git.egg-info/
