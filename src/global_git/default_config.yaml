@@ -89,7 +89,13 @@
         "git commit": "git cometer",
         "git push": "git empujar",
         "git pull": "git jalar",
-        "git restore": "git restaurar"
+        "git restore": "git restaurar",
+        "file changed": "archivo cambiado",
+        "files changed": "archivos cambiados",
+        "insertion(+)": "inserción(+)",
+        "insertions(+)": "inserciones(+)",
+        "deletion(-)": "eliminación(-)",
+        "deletions(-)": "eliminaciones(-)"
       }
     },
     "fr": {
@@ -179,7 +185,13 @@
         "git commit": "git valider",
         "git push": "git pousser",
         "git pull": "git tirer",
-        "git restore": "git restaurer"
+        "git restore": "git restaurer",
+        "file changed": "fichier modifié",
+        "files changed": "fichiers modifiés",
+        "insertion(+)": "insertion(+)",
+        "insertions(+)": "insertions(+)",
+        "deletion(-)": "suppression(-)",
+        "deletions(-)": "suppressions(-)"
       }
     },
     "ja": {
@@ -269,7 +281,13 @@
         "git commit": "git コミット",
         "git push": "git プッシュ",
         "git pull": "git プル",
-        "git restore": "git レストア"
+        "git restore": "git レストア",
+        "file changed": "ファイルが変更されました",
+        "files changed": "ファイルが変更されました",
+        "insertion(+)": "挿入(+)",
+        "insertions(+)": "挿入(+)",
+        "deletion(-)": "削除(-)",
+        "deletions(-)": "削除(-)"
       }
     },
     "ru": {
@@ -359,7 +377,13 @@
         "git commit": "git закоммитить",
         "git push": "git отправить",
         "git pull": "git получить",
-        "git restore": "git восстановить"
+        "git restore": "git восстановить",
+        "file changed": "файл изменён",
+        "files changed": "файлов изменено",
+        "insertion(+)": "вставка(+)",
+        "insertions(+)": "вставок(+)",
+        "deletion(-)": "удаление(-)",
+        "deletions(-)": "удалений(-)"
       }
     },
     "de": {
@@ -449,7 +473,13 @@
         "git commit": "git committen",
         "git push": "git schieben",
         "git pull": "git ziehen",
-        "git restore": "git wiederherstellen"
+        "git restore": "git wiederherstellen",
+        "file changed": "Datei geändert",
+        "files changed": "Dateien geändert",
+        "insertion(+)": "Einfügung(+)",
+        "insertions(+)": "Einfügungen(+)",
+        "deletion(-)": "Löschung(-)",
+        "deletions(-)": "Löschungen(-)"
       }
     },
     "pt": {
@@ -539,7 +569,13 @@
         "git commit": "git confirmar",
         "git push": "git enviar",
         "git pull": "git puxar",
-        "git restore": "git restaurar"
+        "git restore": "git restaurar",
+        "file changed": "arquivo alterado",
+        "files changed": "arquivos alterados",
+        "insertion(+)": "inserção(+)",
+        "insertions(+)": "inserções(+)",
+        "deletion(-)": "remoção(-)",
+        "deletions(-)": "remoções(-)"
       }
     },
     "en-gb": {
@@ -629,7 +665,13 @@
         "git commit": "git honour",
         "git push": "git dispatch",
         "git pull": "git requisition",
-        "git restore": "git mend"
+        "git restore": "git mend",
+        "file changed": "file tweaked",
+        "files changed": "files tweaked",
+        "insertion(+)": "addition(+)",
+        "insertions(+)": "additions(+)",
+        "deletion(-)": "removal(-)",
+        "deletions(-)": "removals(-)"
       }
     }
   }
