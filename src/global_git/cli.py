@@ -1,13 +1,14 @@
 from __future__ import annotations
 
+import locale
 import os
 import shutil
 import subprocess
 import sys
-from typing import Iterable, List, Optional
+from typing import Iterable, List, Mapping, Optional, TextIO
 
 from .config import load_config
-from .translator import translate_args
+from .translator import translate_args, translate_output_text
 
 
 _REAL_GIT_CACHE: Optional[str] = None
@@ -206,12 +207,55 @@ def main() -> int:
         print("global-git: unable to locate the real `git` executable", file=sys.stderr)
         return 127
 
-    # Execute real git with passthrough stdio
+    output_map = cfg.output_map
+    if not output_map:
+        # No output translations configured; passthrough stdio directly.
+        try:
+            proc = subprocess.run([exec_path, *translated], env=env)
+            return proc.returncode
+        except KeyboardInterrupt:
+            return 130
+
+    proc: Optional[subprocess.Popen[bytes]] = None
     try:
-        proc = subprocess.run([exec_path, *translated], env=env)
+        proc = subprocess.Popen(
+            [exec_path, *translated],
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        stdout_data, stderr_data = proc.communicate()
+        _emit_translated(stdout_data, sys.stdout, output_map)
+        _emit_translated(stderr_data, sys.stderr, output_map)
         return proc.returncode
     except KeyboardInterrupt:
+        if proc is not None:
+            proc.kill()
         return 130
+
+
+def _preferred_encoding(stream: TextIO) -> str:
+    return getattr(stream, "encoding", None) or locale.getpreferredencoding(False) or "utf-8"
+
+
+def _emit_translated(data: Optional[bytes], stream: TextIO, replacements: Mapping[str, str]) -> None:
+    if not data:
+        return
+    encoding = _preferred_encoding(stream)
+    try:
+        text = data.decode(encoding)
+    except UnicodeDecodeError:
+        buffer = getattr(stream, "buffer", None)
+        if buffer is not None:
+            buffer.write(data)
+            buffer.flush()
+        else:
+            stream.write(data.decode(encoding, errors="ignore"))
+            stream.flush()
+        return
+    translated = translate_output_text(text, replacements)
+    stream.write(translated)
+    stream.flush()
 
 
 if __name__ == "__main__":
