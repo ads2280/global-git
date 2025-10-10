@@ -30,6 +30,19 @@ During install, we add your Python scripts directory to your shell PATH (best-ef
 
 ## Uso (Usage)
 
+Before using, run `gitglobal` to see the most useful commands to get started.
+
+### CLI Reference
+
+The dedicated `gitglobal` helper lets you explore and control language support:
+
+- `gitglobal status` - show the currently active languages.
+- `gitglobal languages` — list every language and highlight the active ones.
+- `gitglobal show` — display the command/flag mappings for the currently active languages.
+- `gitglobal switch LANGUAGE` — activate a language.
+- `gitglobal all` — enable every available language.
+- `gitglobal --help` — help command for gitglobal.
+
 Instead of this:
 ```bash
 git commit -m "fix: typo in readme"
@@ -89,29 +102,6 @@ Flags are translated when possible:
 - Values like `--color=always` keep their value when translated
 
 You can disable translation for a command by setting `GLOBAL_GIT_BYPASS=1` in the environment.
-
-## CLI Helper
-
-Run `git global` for a friendly ASCII globe, a quick explanation, and the most useful commands to get started.
-
-The dedicated `gitglobal` helper lets you explore and control language support:
-
-- `gitglobal languages` — list every language and highlight the active ones.
-- `gitglobal show es fr` — display the Spanish and French command/flag mappings.
-- `gitglobal switch ja` — activate Japanese only (use multiple codes for more languages).
-- `gitglobal all` — enable every available language.
-- `gitglobal --ayuda` — show the Spanish command list using the language's own `--help` flag.
-
-### User configuration
-
-Add your own mappings in `~/.config/global-git/config.json`:
-```json
-{
-  "commands": { "enviar": "push" },
-  "flags": { "--ayudita": "--help" }
-}
-```
-Or set `GLOBAL_GIT_CONFIG=/path/to/config.json` to use a custom file.
 
 ## Why though?
 
