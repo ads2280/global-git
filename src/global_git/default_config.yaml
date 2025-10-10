@@ -48,6 +48,10 @@
         "--silencioso": "--quiet"
       },
       "outputs": {
+        "fatal: The current branch ": "fatal: La rama actual ",
+        " has no upstream branch.": " no tiene una rama remota de seguimiento.",
+        "To push the current branch and set the remote as upstream, use": "Para empujar la rama actual y configurar la remota como seguimiento, usa",
+        "To have this happen automatically for branches without a tracking upstream, see 'push.autoSetupRemote' in 'git help config'.": "Para que esto ocurra automáticamente en ramas sin seguimiento, consulta 'push.autoSetupRemote' en 'git help config'.",
         "There is no tracking information for the current branch.": "No hay información de seguimiento para la rama actual.",
         "Please specify which branch you want to merge with.": "Por favor especifica con qué rama quieres fusionar.",
         "See git-pull(1) for details.": "Consulta git-pull(1) para más detalles.",
@@ -134,6 +138,10 @@
         "--silencieux": "--quiet"
       },
       "outputs": {
+        "fatal: The current branch ": "fatal: La branche courante ",
+        " has no upstream branch.": " n'a pas de branche distante suivie.",
+        "To push the current branch and set the remote as upstream, use": "Pour envoyer la branche courante et définir la distante comme suivi, utilisez",
+        "To have this happen automatically for branches without a tracking upstream, see 'push.autoSetupRemote' in 'git help config'.": "Pour automatiser cela pour les branches sans suivi, consultez 'push.autoSetupRemote' dans 'git help config'.",
         "There is no tracking information for the current branch.": "Aucune information de suivi n'est définie pour la branche actuelle.",
         "Please specify which branch you want to merge with.": "Veuillez préciser avec quelle branche vous souhaitez fusionner.",
         "See git-pull(1) for details.": "Voir git-pull(1) pour plus de détails.",
@@ -220,6 +228,10 @@
         "--静か": "--quiet"
       },
       "outputs": {
+        "fatal: The current branch ": "fatal: 現在のブランチ ",
+        " has no upstream branch.": " には追跡する上流ブランチがありません。",
+        "To push the current branch and set the remote as upstream, use": "現在のブランチをプッシュして上流を設定するには次を使用してください",
+        "To have this happen automatically for branches without a tracking upstream, see 'push.autoSetupRemote' in 'git help config'.": "追跡対象のないブランチで自動的に行うには 'git help config' の 'push.autoSetupRemote' を参照してください。",
         "There is no tracking information for the current branch.": "現在のブランチには追跡情報が設定されていません。",
         "Please specify which branch you want to merge with.": "マージしたいブランチを指定してください。",
         "See git-pull(1) for details.": "詳細は git-pull(1) を参照してください。",
@@ -306,6 +318,10 @@
         "--тихий": "--quiet"
       },
       "outputs": {
+        "fatal: The current branch ": "fatal: Текущая ветка ",
+        " has no upstream branch.": " не имеет отслеживаемой удалённой ветки.",
+        "To push the current branch and set the remote as upstream, use": "Чтобы отправить текущую ветку и настроить удалённую как upstream, используйте",
+        "To have this happen automatically for branches without a tracking upstream, see 'push.autoSetupRemote' in 'git help config'.": "Чтобы делать это автоматически для веток без отслеживания, смотрите 'push.autoSetupRemote' в 'git help config'.",
         "There is no tracking information for the current branch.": "Для текущей ветки не настроена информация об отслеживании.",
         "Please specify which branch you want to merge with.": "Укажите, с какой веткой вы хотите выполнить слияние.",
         "See git-pull(1) for details.": "Подробности см. в git-pull(1).",
@@ -392,6 +408,10 @@
         "--still": "--quiet"
       },
       "outputs": {
+        "fatal: The current branch ": "fatal: Der aktuelle Branch ",
+        " has no upstream branch.": " hat keinen Upstream-Branch.",
+        "To push the current branch and set the remote as upstream, use": "Um den aktuellen Branch zu pushen und den Remote als Upstream zu setzen, nutze",
+        "To have this happen automatically for branches without a tracking upstream, see 'push.autoSetupRemote' in 'git help config'.": "Damit dies automatisch für Branches ohne Tracking passiert, siehe 'push.autoSetupRemote' in 'git help config'.",
         "There is no tracking information for the current branch.": "Für den aktuellen Branch ist keine Tracking-Information vorhanden.",
         "Please specify which branch you want to merge with.": "Bitte gib an, mit welchem Branch du zusammenführen möchtest.",
         "See git-pull(1) for details.": "Weitere Details findest du in git-pull(1).",
@@ -478,6 +498,10 @@
         "--silencioso": "--quiet"
       },
       "outputs": {
+        "fatal: The current branch ": "fatal: O ramo atual ",
+        " has no upstream branch.": " não possui um ramo upstream.",
+        "To push the current branch and set the remote as upstream, use": "Para enviar o ramo atual e definir o remoto como upstream, use",
+        "To have this happen automatically for branches without a tracking upstream, see 'push.autoSetupRemote' in 'git help config'.": "Para que isso aconteça automaticamente em ramos sem rastreamento, veja 'push.autoSetupRemote' em 'git help config'.",
         "There is no tracking information for the current branch.": "Não há informações de rastreamento para o ramo atual.",
         "Please specify which branch you want to merge with.": "Especifique com qual ramo você deseja mesclar.",
         "See git-pull(1) for details.": "Veja git-pull(1) para mais detalhes.",
@@ -564,6 +588,10 @@
         "--taciturn": "--quiet"
       },
       "outputs": {
+        "fatal: The current branch ": "fatal: The current bough ",
+        " has no upstream branch.": " lacks an upstream mate.",
+        "To push the current branch and set the remote as upstream, use": "To dispatch the current bough and set the distant as upstream, try",
+        "To have this happen automatically for branches without a tracking upstream, see 'push.autoSetupRemote' in 'git help config'.": "To let that sort itself for boughs sans tracking, consult 'push.autoSetupRemote' in 'git help config'.",
         "There is no tracking information for the current branch.": "No tracking particulars are set for this branch.",
         "Please specify which branch you want to merge with.": "Kindly state which branch you'd like to mingle with.",
         "See git-pull(1) for details.": "Peruse git-pull(1) for the finer points.",
