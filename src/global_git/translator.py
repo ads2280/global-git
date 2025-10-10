@@ -34,6 +34,16 @@ def translate_args(argv: Iterable[str], command_map: Mapping[str, str], flag_map
     return args
 
 
+def translate_output_text(text: str, replacements: Mapping[str, str]) -> str:
+    if not text or not replacements:
+        return text
+    # Apply longer phrases first to avoid partial overlaps clobbering more specific translations.
+    for original in sorted(replacements, key=len, reverse=True):
+        replacement = replacements[original]
+        text = text.replace(original, replacement)
+    return text
+
+
 def _first_non_option_index(args: List[str]) -> int | None:
     # Git allows many global options before the subcommand. The first token that
     # does not start with '-' is treated as the subcommand. We skip values for
@@ -52,4 +62,3 @@ def _first_non_option_index(args: List[str]) -> int | None:
                 continue
         i += 1
     return None
-

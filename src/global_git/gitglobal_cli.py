@@ -110,6 +110,12 @@ def _print_language_details(codes: Iterable[str], cfg: TranslationConfig) -> int
                 print(f"    {original:<21} -> {mapped}")
         else:
             print("  Flags: none recorded.")
+        if lang.outputs:
+            print("  Output phrases:")
+            for original, mapped in sorted(lang.outputs.items()):
+                print(f"    \"{original}\" -> \"{mapped}\"")
+        else:
+            print("  Output phrases: none recorded.")
         print()
     if not any_printed:
         print("No matching languages to display.", file=sys.stderr)
