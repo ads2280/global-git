@@ -9,15 +9,20 @@ from .state import save_active_languages
 
 
 ASCII_GLOBE = r"""
-        _.-'''-._
-    .-'  _   _   '-.
-   /    (_) (_)     \
-  |  .-.   _   .-.   |
-  |  |_|  (_)  |_|   |
-  |   ___  _  ___    |
-   \   \_/(_) \_/   /
-    '-._  ___  _.-'
-         '---'
+             ___.....___
+       ,..-.=--.-.       "".
+     .{_..        `        ,. .
+   .'     \      /        | ,'.\`.
+  /        :   ;'          `____> \
+ :         `. (           /       :
+ |           `>\_         \      r|
+             /   \         `._   \
+ |          |      `          ;   |
+  :          \     /          `   ;
+   \          \.  '            ` /
+     `.        | /             .'
+        `      `/          . '
+           `---'.....---''
 """
 
 LANGUAGE_NAMES = {
@@ -38,7 +43,8 @@ def _display_name(code: str) -> str:
 def _print_welcome(cfg: TranslationConfig) -> None:
     active = ", ".join(cfg.active_languages) if cfg.active_languages else "none"
     print(ASCII_GLOBE.rstrip())
-    print("global-git makes Git multilingual.")
+    print()
+    print("Finally, you can use Git commands in Spanish/French/British/etc. without your computer yelling at you")
     print()
     print(f"Active languages: {active}")
     print()
