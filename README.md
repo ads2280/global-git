@@ -2,9 +2,7 @@
 
 > Because why should English speakers have all the fun? (Spoiler: they shouldn't)
 
-Finally, you can use Git commands in Spanish, French, Japanese, and even British English without your computer yelling at you in American. Born out of a side project during test runs and the revolutionary idea: "wait, is that actually possible?"
-
-Turns out it was. We're as surprised as you are.
+Finally, you can use Git commands in Spanish, French, Japanese, and even British English without your computer yelling at you in American. 
 
 ## ¿Qué es esto?
 
