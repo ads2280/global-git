@@ -1,14 +1,18 @@
-# global-git
+# 🌍 global-git
 
-> Because why should English speakers have all the fun?
+> Because why should English speakers have all the fun? (Spoiler: they shouldn't)
 
-Finally, you can use Git commands in Spanish without your computer yelling at you. Born out of a side project during test runs and the revolutionary idea: "wait, is that actually possible?"
+Finally, you can use Git commands in Spanish, French, Japanese, and even British English without your computer yelling at you in American. Born out of a side project during test runs and the revolutionary idea: "wait, is that actually possible?"
+
+Turns out it was. We're as surprised as you are.
 
 ## ¿Qué es esto?
 
-global-git is a wrapper that lets you use Git commands in multiple languages. That's it. That's the repo.
+global-git is a wrapper that lets you use Git commands in multiple languages. That's it. That's the repo. We could've made it more complicated, but why?
 
-Want to `git cometer` instead of `git commit`? Now you can. Feel like doing a `git empujar` instead of `git push`? Go wild. Prefer to `git honour` your changes in proper British English? Jolly good!
+Want to `git cometer` instead of `git commit`? Now you can. Feel like doing a `git empujar` instead of `git push`? Go wild. Prefer to `git honour` your changes in proper British English? Absolutely smashing, old chap.
+
+Your monolingual coworkers will be confused. Your multilingual coworkers will be impressed. Your British coworkers will finally feel seen.
 
 ## Installation
 
@@ -65,13 +69,13 @@ git dispatch origin main
 
 ### Supported Languages
 
-- **Spanish (es)**: `git cometer`, `git empujar`, `git jalar`
-- **French (fr)**: `git valider`, `git pousser`, `git tirer`
-- **German (de)**: `git committen`, `git schieben`, `git ziehen`
-- **Portuguese (pt)**: `git confirmar`, `git enviar`, `git puxar`
-- **Russian (ru)**: `git закоммитить`, `git отправить`, `git получить`
-- **Japanese (ja)**: `git コミット`, `git プッシュ`, `git プル`
-- **British English (en-gb)**: `git honour`, `git dispatch`, `git requisition` 🇬🇧
+- 🇪🇸 **Spanish (es)**: `git cometer`, `git empujar`, `git jalar`
+- 🇫🇷 **French (fr)**: `git valider`, `git pousser`, `git tirer`
+- 🇩🇪 **German (de)**: `git committen`, `git schieben`, `git ziehen`
+- 🇵🇹 **Portuguese (pt)**: `git confirmar`, `git enviar`, `git puxar`
+- 🇷🇺 **Russian (ru)**: `git закоммитить`, `git отправить`, `git получить`
+- 🇯🇵 **Japanese (ja)**: `git コミット`, `git プッシュ`, `git プル`
+- 🇬🇧 **British English (en-gb)**: `git honour`, `git dispatch`, `git requisition`
 
 ### Example Commands
 
@@ -113,7 +117,7 @@ Why not? Also:
 
 ## Inspiración
 
-Isaac
+Anika
 
 ## Contributing
 
