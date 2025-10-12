@@ -12,6 +12,15 @@ Want to `git cometer` instead of `git commit`? Now you can. Feel like doing a `g
 
 Your monolingual coworkers will be confused. Your multilingual coworkers will be impressed. Your British coworkers will finally feel seen.
 
+## Why though?
+
+Why not? Also:
+- Makes your git history more interesting
+- Confuses your coworkers in the best way
+- Proves that programming doesn't have to be English-only
+- Born from procrastination and "actually down" energy
+
+
 ## Installation
 
 Option 1: from source
@@ -104,14 +113,6 @@ Flags are translated when possible:
 - Values like `--color=always` keep their value when translated
 
 You can disable translation for a command by setting `GLOBAL_GIT_BYPASS=1` in the environment.
-
-## Why though?
-
-Why not? Also:
-- Makes your git history more interesting
-- Confuses your coworkers in the best way
-- Proves that programming doesn't have to be English-only
-- Born from procrastination and "actually down" energy
 
 ## Inspiración
 
