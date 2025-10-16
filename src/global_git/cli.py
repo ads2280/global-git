@@ -5,10 +5,12 @@ import os
 import shutil
 import subprocess
 import sys
-from typing import Iterable, List, Mapping, Optional, TextIO
+from typing import Iterable, List, Mapping, Optional, Sequence, TextIO
 
+from .achievements import ACHIEVEMENT_LOOKUP, newly_earned_achievements
 from .config import load_config
-from .translator import translate_args, translate_output_text
+from .state import award_achievements, load_achievements_state, record_command_usage
+from .translator import TranslationResult, translate_output_text, translate_with_metadata
 
 
 _REAL_GIT_CACHE: Optional[str] = None
@@ -164,6 +166,77 @@ def _git_execution_env(
     return env
 
 
+def _first_non_option_index(args: Sequence[str]) -> Optional[int]:
+    i = 0
+    while i < len(args):
+        token = args[i]
+        if not token.startswith("-"):
+            return i
+        if token in {"-C", "-c", "-I", "-i", "-X"} and i + 1 < len(args) and not args[i + 1].startswith("-"):
+            i += 2
+            continue
+        i += 1
+    return None
+
+
+def _extract_base_command(args: Sequence[str]) -> Optional[str]:
+    index = _first_non_option_index(args)
+    if index is None or index >= len(args):
+        return None
+    return args[index]
+
+
+def _normalize_language(language: Optional[str]) -> Optional[str]:
+    if not language or language == "__global__":
+        return None
+    return language
+
+
+def _celebrate_achievements(identifiers: Sequence[str]) -> None:
+    if not identifiers:
+        return
+    for identifier in identifiers:
+        definition = ACHIEVEMENT_LOOKUP.get(identifier)
+        if not definition:
+            continue
+        color = definition.color
+        reset = "\033[0m"
+        accent = f"\033[1;{color}m"
+        title = f"{definition.emoji}  Achievement Unlocked!"
+        name_line = f"{definition.name}"
+        border_length = max(len(title), len(name_line)) + 4
+        top_border = accent + "╔" + "═" * (border_length - 2) + "╗" + reset
+        bottom_border = accent + "╚" + "═" * (border_length - 2) + "╝" + reset
+        padded_title = title.ljust(border_length - 4)
+        padded_name = name_line.ljust(border_length - 4)
+        description = definition.description
+        print()
+        print(top_border)
+        print(f"{accent}║ {padded_title} ║{reset}")
+        print(f"{accent}║ {padded_name} ║{reset}")
+        print(bottom_border)
+        print(f"{accent}{description}{reset}")
+        print()
+
+
+def _post_git_invocation(args: Sequence[str], translation: TranslationResult) -> None:
+    try:
+        base_command = _extract_base_command(args)
+        if base_command and base_command.lower() == "for-each-ref":
+            return
+        alias = translation.command.original if translation.command else None
+        language = _normalize_language(translation.command.language if translation.command else None)
+        stats = record_command_usage(base_command, language=language, alias=alias)
+        achievements_state = load_achievements_state()
+        earned_ids = achievements_state.get("earned", {}).keys()
+        pending = newly_earned_achievements(stats, earned_ids)
+        newly_awarded, _ = award_achievements(pending)
+        _celebrate_achievements(newly_awarded)
+    except Exception:
+        # Stats tracking should never block git usage; swallow unexpected issues.
+        pass
+
+
 def main() -> int:
     try:
         shim_depth = int(os.environ.get(_SHIM_DEPTH_ENV, "0"))
@@ -201,7 +274,14 @@ def main() -> int:
         return subprocess.call([exec_path, *args], env=env)
 
     cfg = load_config()
-    translated = translate_args(args, cfg.command_map, cfg.flag_map)
+    translation = translate_with_metadata(
+        args,
+        cfg.command_map,
+        cfg.flag_map,
+        cfg.command_sources,
+        cfg.flag_sources,
+    )
+    translated = translation.args
 
     if not exec_path:
         print("global-git: unable to locate the real `git` executable", file=sys.stderr)
@@ -210,13 +290,21 @@ def main() -> int:
     output_map = cfg.output_map
     if not output_map:
         # No output translations configured; passthrough stdio directly.
+        ran_git = True
+        exit_code: int
         try:
-            proc = subprocess.run([exec_path, *translated], env=env)
-            return proc.returncode
-        except KeyboardInterrupt:
-            return 130
+            try:
+                proc = subprocess.run([exec_path, *translated], env=env)
+                exit_code = proc.returncode
+            except KeyboardInterrupt:
+                exit_code = 130
+            return exit_code
+        finally:
+            if ran_git:
+                _post_git_invocation(translated, translation)
 
     proc: Optional[subprocess.Popen[bytes]] = None
+    ran_git = True
     try:
         proc = subprocess.Popen(
             [exec_path, *translated],
@@ -232,6 +320,9 @@ def main() -> int:
         if proc is not None:
             proc.kill()
         return 130
+    finally:
+        if ran_git:
+            _post_git_invocation(translated, translation)
 
 
 def _preferred_encoding(stream: TextIO) -> str:
