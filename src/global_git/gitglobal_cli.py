@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from typing import Dict, Iterable, List, Mapping, Sequence
 
 from .config import LanguageDefinition, TranslationConfig, load_config
+from .globe_animation import show_globe_animation
 from .state import save_active_languages
 
 
@@ -25,6 +27,10 @@ ASCII_GLOBE = r"""
            `---'.....---''
 """
 
+_ANIMATION_DISABLE_ENV = "GLOBAL_GIT_NO_ANIMATION"
+_TRUTHY = {"1", "true", "True", "yes", "on", "YES", "On"}
+
+
 LANGUAGE_NAMES = {
     "es": "Spanish",
     "fr": "French",
@@ -40,10 +46,20 @@ def _display_name(code: str) -> str:
     return LANGUAGE_NAMES.get(code.lower(), code)
 
 
-def _print_welcome(cfg: TranslationConfig) -> None:
+def _animation_disabled_by_env() -> bool:
+    value = os.environ.get(_ANIMATION_DISABLE_ENV, "0")
+    if value in _TRUTHY:
+        return True
+    # Backward-compatible alias
+    legacy = os.environ.get("GLOBAL_GIT_DISABLE_ANIMATION")
+    return bool(legacy and legacy in _TRUTHY)
+
+
+def _print_welcome(cfg: TranslationConfig, animation_played: bool) -> None:
     active = ", ".join(cfg.active_languages) if cfg.active_languages else "none"
-    print(ASCII_GLOBE.rstrip())
-    print()
+    if not animation_played:
+        print(ASCII_GLOBE.rstrip())
+        print()
     print("Finally, you can use Git commands in Spanish/French/British/etc. without your computer yelling at you")
     print()
     print(f"Active languages: {active}")
@@ -150,6 +166,11 @@ def _build_parser() -> argparse.ArgumentParser:
         prog="gitglobal",
         description="Manage global-git's language configuration.",
     )
+    parser.add_argument(
+        "--no-animation",
+        action="store_true",
+        help="Skip the startup globe animation (env: GLOBAL_GIT_NO_ANIMATION=1).",
+    )
     subparsers = parser.add_subparsers(dest="command")
 
     show_parser = subparsers.add_parser("show", help="Display translations for languages.")
@@ -176,13 +197,19 @@ def main(argv: Sequence[str] | None = None) -> int:
     if localized:
         return _print_language_details([localized], cfg)
 
-    if not args:
-        _print_welcome(cfg)
-        return 0
-
     parser = _build_parser()
     namespace = parser.parse_args(args)
     command = namespace.command
+
+    if command is None:
+        animation_disabled = _animation_disabled_by_env() or getattr(namespace, "no_animation", False)
+        animation_played = False
+        if not animation_disabled:
+            animation_played = show_globe_animation()
+            if animation_played:
+                print()
+        _print_welcome(cfg, animation_played)
+        return 0
 
     if command == "show":
         if getattr(namespace, "all", False):
@@ -234,7 +261,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         _print_status(cfg.active_languages)
         return 0
 
-    _print_welcome(cfg)
+    _print_welcome(cfg, False)
     return 0
 
 
