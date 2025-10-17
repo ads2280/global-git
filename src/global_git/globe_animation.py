@@ -7,7 +7,7 @@ import sys
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Iterable, Tuple
+from typing import Tuple
 
 
 _NO_COLOR_ENV = {"1", "true", "True", "yes", "YES"}
