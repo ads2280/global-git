@@ -10,7 +10,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Sequence
 from .achievements import ACHIEVEMENTS, AchievementDefinition
 from .config import LanguageDefinition, TranslationConfig, load_config
 from .globe_animation import show_globe_animation
-from .state import DEFAULT_LANGUAGE_KEY, load_usage_stats, save_active_languages
+from .state import DEFAULT_LANGUAGE_KEY, load_usage_stats, save_active_languages, load_achievements_state
 
 
 ASCII_GLOBE = r"""
@@ -276,38 +276,6 @@ def _print_achievement_summary(achievements_state: Mapping[str, Any]) -> None:
     else:
         print(_paint("You have unlocked every achievement. A legend in every tongue!", COUNTER_COLOR, bold=True))
 
-def _banner(title: str) -> None:
-    span = len(title) + 4
-    top = "╔" + "═" * span + "╗"
-    middle = f"║  {title}  ║"
-    bottom = "╚" + "═" * span + "╝"
-    print(_paint(top, SECTION_COLOR, bold=True))
-    print(_paint(middle, SECTION_COLOR, bold=True))
-    print(_paint(bottom, SECTION_COLOR, bold=True))
-
-
-def _section_heading(title: str) -> None:
-    print()
-    print(_paint(title, SECTION_COLOR, bold=True))
-
-
-def _top_entries(mapping: Any, limit: int) -> List[tuple[str, int]]:
-    if not isinstance(mapping, Mapping):
-        return []
-    items: List[tuple[str, int]] = []
-    for key, value in mapping.items():
-        if not isinstance(key, str):
-            continue
-        if isinstance(value, int) and value > 0:
-            items.append((key, value))
-    items.sort(key=lambda pair: pair[1], reverse=True)
-    return items[:limit]
-
-
-def _language_color(code: str) -> str:
-    return LANGUAGE_COLORS.get(code, SECTION_COLOR)
-
-
 def _bar_line(
     label: str,
     count: int,
@@ -404,6 +372,38 @@ def _print_language_section(stats: Mapping[str, Any], width: int) -> None:
         label_fn=_language_label,
         color_fn=_language_color,
     )
+
+def _banner(title: str) -> None:
+    span = len(title) + 4
+    top = "╔" + "═" * span + "╗"
+    middle = f"║  {title}  ║"
+    bottom = "╚" + "═" * span + "╝"
+    print(_paint(top, SECTION_COLOR, bold=True))
+    print(_paint(middle, SECTION_COLOR, bold=True))
+    print(_paint(bottom, SECTION_COLOR, bold=True))
+
+
+def _section_heading(title: str) -> None:
+    print()
+    print(_paint(title, SECTION_COLOR, bold=True))
+
+
+def _top_entries(mapping: Any, limit: int) -> List[tuple[str, int]]:
+    if not isinstance(mapping, Mapping):
+        return []
+    items: List[tuple[str, int]] = []
+    for key, value in mapping.items():
+        if not isinstance(key, str):
+            continue
+        if isinstance(value, int) and value > 0:
+            items.append((key, value))
+    items.sort(key=lambda pair: pair[1], reverse=True)
+    return items[:limit]
+
+
+def _language_color(code: str) -> str:
+    return LANGUAGE_COLORS.get(code, SECTION_COLOR)
+
 
 def _print_achievement_showcase(achievements_state: Mapping[str, Any]) -> None:
     unlocked, locked = _partition_achievements(achievements_state)
@@ -665,6 +665,14 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     if command == "status":
         _print_status(cfg.active_languages)
+        return 0
+
+    if command == "achievements":
+        achievements_state = load_achievements_state()
+        if getattr(namespace, "stats", False):
+            _print_achievement_summary(achievements_state)
+        else:
+            _print_achievement_showcase(achievements_state)
         return 0
 
     _print_welcome(cfg, False)
