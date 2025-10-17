@@ -3,8 +3,10 @@ from __future__ import annotations
 import argparse
 import os
 import sys
-from typing import Dict, Iterable, List, Mapping, Sequence
+import textwrap
+from typing import Any, Dict, Iterable, List, Mapping, Sequence
 
+from .achievements import ACHIEVEMENT_LOOKUP, ACHIEVEMENTS, AchievementDefinition
 from .config import LanguageDefinition, TranslationConfig, load_config
 from .globe_animation import show_globe_animation
 from .state import save_active_languages
@@ -40,6 +42,39 @@ LANGUAGE_NAMES = {
     "ja": "Japanese",
     "en-gb": "English (UK)",
 }
+
+RESET = "\033[0m"
+SECTION_COLOR = "38;5;45"
+COMMAND_COLOR = "38;5;81"
+ALIAS_COLOR = "38;5;200"
+COUNTER_COLOR = "38;5;118"
+DIM_COLOR = "38;5;244"
+
+LANGUAGE_COLORS = {
+    "es": "38;5;208",
+    "fr": "38;5;177",
+    "de": "38;5;70",
+    "pt": "38;5;39",
+    "ru": "38;5;33",
+    "ja": "38;5;176",
+    "en-gb": "38;5;33",
+    DEFAULT_LANGUAGE_KEY: "38;5;246",
+}
+
+LOCKED_FG_COLOR = "38;5;250"
+LOCKED_BG_COLOR = "48;5;236"
+
+
+def _paint(text: str, color: str, *, bold: bool = False, dim: bool = False, bg: str | None = None) -> str:
+    codes = []
+    if bold:
+        codes.append("1")
+    if dim:
+        codes.append("2")
+    codes.append(color)
+    if bg:
+        codes.append(bg)
+    return f"\033[{';'.join(codes)}m{text}{RESET}"
 
 
 def _display_name(code: str) -> str:
@@ -120,24 +155,15 @@ def _print_language_details(codes: Iterable[str], cfg: TranslationConfig) -> int
         any_printed = True
         name = _display_name(code)
         print(f"{name} ({code})")
-        if lang.commands:
-            print("  Commands:")
-            for original, mapped in sorted(lang.commands.items()):
-                print(f"    git {original:<18} -> git {mapped}")
-        else:
-            print("  Commands: none recorded.")
-        if lang.flags:
-            print("  Flags:")
-            for original, mapped in sorted(lang.flags.items()):
-                print(f"    {original:<21} -> {mapped}")
-        else:
-            print("  Flags: none recorded.")
-        if lang.outputs:
-            print("  Output phrases:")
-            for original, mapped in sorted(lang.outputs.items()):
-                print(f"    \"{original}\" -> \"{mapped}\"")
-        else:
-            print("  Output phrases: none recorded.")
+        command_items = sorted(lang.commands.items())
+        print("  Commands:")
+        command_lines = [f"git {original} -> git {mapped}" for original, mapped in command_items]
+        _print_compact_table(command_lines)
+
+        flag_items = sorted(lang.flags.items())
+        print("  Flags:")
+        flag_lines = [f"{original} -> {mapped}" for original, mapped in flag_items]
+        _print_compact_table(flag_lines)
         print()
     if not any_printed:
         print("No matching languages to display.", file=sys.stderr)
@@ -185,6 +211,18 @@ def _build_parser() -> argparse.ArgumentParser:
 
     subparsers.add_parser("all", help="Activate every language.")
     subparsers.add_parser("status", help="Show the current language selection.")
+    subparsers.add_parser("stats", help="Display your GitGlobal usage dashboard.")
+    achievements_parser = subparsers.add_parser(
+        "achievements",
+        help="Step into an interactive gallery of your localized milestones.",
+    )
+    achievements_parser.add_argument(
+        "--stats",
+        "-s",
+        action="store_true",
+        dest="stats",
+        help="Show counts of unlocked achievements instead of the interactive gallery.",
+    )
 
     return parser
 
@@ -225,6 +263,11 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     if command == "languages":
         _print_languages(cfg)
+        return 0
+
+    if command == "stats":
+        stats = load_usage_stats()
+        _print_stats_dashboard(stats, cfg)
         return 0
 
     if command == "switch":

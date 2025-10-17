@@ -2,9 +2,7 @@
 
 > Because why should English speakers have all the fun? (Spoiler: they shouldn't)
 
-Finally, you can use Git commands in Spanish, French, Japanese, and even British English without your computer yelling at you in American. Born out of a side project during test runs and the revolutionary idea: "wait, is that actually possible?"
-
-Turns out it was. We're as surprised as you are.
+Finally, you can use Git commands in Spanish, French, Japanese, and even British English without your computer yelling at you in American. 
 
 ## ¿Qué es esto?
 
@@ -13,6 +11,15 @@ global-git is a wrapper that lets you use Git commands in multiple languages. Th
 Want to `git cometer` instead of `git commit`? Now you can. Feel like doing a `git empujar` instead of `git push`? Go wild. Prefer to `git honour` your changes in proper British English? Absolutely smashing, old chap.
 
 Your monolingual coworkers will be confused. Your multilingual coworkers will be impressed. Your British coworkers will finally feel seen.
+
+## Why though?
+
+Why not? Also:
+- Makes your git history more interesting
+- Confuses your coworkers in the best way
+- Proves that programming doesn't have to be English-only
+- Born from procrastination and "actually down" energy
+
 
 ## Installation
 
@@ -106,14 +113,6 @@ Flags are translated when possible:
 - Values like `--color=always` keep their value when translated
 
 You can disable translation for a command by setting `GLOBAL_GIT_BYPASS=1` in the environment.
-
-## Why though?
-
-Why not? Also:
-- Makes your git history more interesting
-- Confuses your coworkers in the best way
-- Proves that programming doesn't have to be English-only
-- Born from procrastination and "actually down" energy
 
 ## Inspiración
 

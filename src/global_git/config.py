@@ -38,7 +38,9 @@ class _LoadedConfig:
 @dataclass(frozen=True)
 class TranslationConfig:
     command_map: Mapping[str, str]
+    command_sources: Mapping[str, str]
     flag_map: Mapping[str, str]
+    flag_sources: Mapping[str, str]
     output_map: Mapping[str, str]
     languages: Mapping[str, LanguageDefinition]
     active_languages: Tuple[str, ...]
@@ -171,22 +173,32 @@ def _load_user_override() -> _LoadedConfig | None:
 
 def _aggregate_maps(
     config: _LoadedConfig, active: Iterable[str]
-) -> Tuple[Dict[str, str], Dict[str, str], Dict[str, str]]:
+) -> Tuple[Dict[str, str], Dict[str, str], Dict[str, str], Dict[str, str], Dict[str, str]]:
     command_map: Dict[str, str] = {}
+    command_sources: Dict[str, str] = {}
     flag_map: Dict[str, str] = {}
+    flag_sources: Dict[str, str] = {}
     output_map: Dict[str, str] = {}
     for code in active:
         lang = config.languages.get(code)
         if not lang:
             continue
-        command_map.update(lang.commands)
-        flag_map.update(lang.flags)
+        for alias, target in lang.commands.items():
+            command_map[alias] = target
+            command_sources[alias] = code
+        for alias, target in lang.flags.items():
+            flag_map[alias] = target
+            flag_sources[alias] = code
         output_map.update(lang.outputs)
     # Global-level overrides are applied last so they win
-    command_map.update(config.commands)
-    flag_map.update(config.flags)
+    for alias, target in config.commands.items():
+        command_map[alias] = target
+        command_sources[alias] = "__global__"
+    for alias, target in config.flags.items():
+        flag_map[alias] = target
+        flag_sources[alias] = "__global__"
     output_map.update(config.outputs)
-    return command_map, flag_map, output_map
+    return command_map, command_sources, flag_map, flag_sources, output_map
 
 
 def load_config() -> TranslationConfig:
@@ -196,11 +208,15 @@ def load_config() -> TranslationConfig:
 
     available_codes = tuple(merged.languages.keys())
     active_languages = load_active_languages(available_codes)
-    command_map, flag_map, output_map = _aggregate_maps(merged, active_languages)
+    command_map, command_sources, flag_map, flag_sources, output_map = _aggregate_maps(
+        merged, active_languages
+    )
 
     return TranslationConfig(
         command_map=command_map,
+        command_sources=command_sources,
         flag_map=flag_map,
+        flag_sources=flag_sources,
         output_map=output_map,
         languages=merged.languages,
         active_languages=active_languages,
