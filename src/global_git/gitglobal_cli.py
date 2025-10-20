@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 import argparse
-import shutil
+import os
 import sys
+import shutil
 import textwrap
 from typing import Any, Dict, Iterable, List, Mapping, Sequence
 
-from .achievements import ACHIEVEMENT_LOOKUP, ACHIEVEMENTS, AchievementDefinition
+from .achievements import ACHIEVEMENTS, AchievementDefinition
 from .config import LanguageDefinition, TranslationConfig, load_config
-from .state import DEFAULT_LANGUAGE_KEY, load_achievements_state, load_usage_stats, save_active_languages
+from .globe_animation import show_globe_animation
+from .state import DEFAULT_LANGUAGE_KEY, load_usage_stats, save_active_languages, load_achievements_state
 
 
 ASCII_GLOBE = r"""
@@ -27,6 +29,10 @@ ASCII_GLOBE = r"""
         `      `/          . '
            `---'.....---''
 """
+
+_ANIMATION_DISABLE_ENV = "GLOBAL_GIT_NO_ANIMATION"
+_TRUTHY = {"1", "true", "True", "yes", "on", "YES", "On"}
+
 
 LANGUAGE_NAMES = {
     "es": "Spanish",
@@ -71,11 +77,6 @@ def _paint(text: str, color: str, *, bold: bool = False, dim: bool = False, bg: 
         codes.append(bg)
     return f"\033[{';'.join(codes)}m{text}{RESET}"
 
-
-def _display_name(code: str) -> str:
-    return LANGUAGE_NAMES.get(code.lower(), code)
-
-
 def _language_label(code: str) -> str:
     if code == DEFAULT_LANGUAGE_KEY:
         return "Core (English)"
@@ -91,137 +92,6 @@ def _terminal_width(fallback: int = 100) -> int:
         return shutil.get_terminal_size((fallback, 24)).columns
     except Exception:
         return fallback
-
-
-def _banner(title: str) -> None:
-    span = len(title) + 4
-    top = "╔" + "═" * span + "╗"
-    middle = f"║  {title}  ║"
-    bottom = "╚" + "═" * span + "╝"
-    print(_paint(top, SECTION_COLOR, bold=True))
-    print(_paint(middle, SECTION_COLOR, bold=True))
-    print(_paint(bottom, SECTION_COLOR, bold=True))
-
-
-def _section_heading(title: str) -> None:
-    print()
-    print(_paint(title, SECTION_COLOR, bold=True))
-
-
-def _top_entries(mapping: Any, limit: int) -> List[tuple[str, int]]:
-    if not isinstance(mapping, Mapping):
-        return []
-    items: List[tuple[str, int]] = []
-    for key, value in mapping.items():
-        if not isinstance(key, str):
-            continue
-        if isinstance(value, int) and value > 0:
-            items.append((key, value))
-    items.sort(key=lambda pair: pair[1], reverse=True)
-    return items[:limit]
-
-
-def _language_color(code: str) -> str:
-    return LANGUAGE_COLORS.get(code, SECTION_COLOR)
-
-
-def _bar_line(
-    label: str,
-    count: int,
-    max_value: int,
-    total: int,
-    bar_width: int,
-    color: str,
-) -> str:
-    safe_max = max_value if max_value > 0 else max(count, 1)
-    ratio = count / safe_max if safe_max else 0.0
-    filled = int(round(ratio * bar_width))
-    if count > 0:
-        filled = max(1, min(bar_width, filled))
-    empty = max(0, bar_width - filled)
-    bar = ("█" * filled) + (" " * empty)
-    label_field = 18
-    label_text = label if len(label) <= label_field else label[: label_field - 1] + "…"
-    label_text = label_text.ljust(label_field)
-    styled_label = _paint(label_text, color, bold=True)
-    colored_bar = _paint(bar, color)
-    count_text = _paint(_format_number(count), COUNTER_COLOR, bold=True)
-    percent = (count / total * 100) if total else 0.0
-    percent_text = _paint(f"{percent:5.1f}%", DIM_COLOR, dim=True)
-    return f"  {styled_label} {colored_bar} {count_text:>8} {percent_text}"
-
-
-def _render_metric_table(
-    entries: List[tuple[str, int]],
-    *,
-    total: int,
-    bar_width: int,
-    label_fn,
-    color_fn,
-) -> None:
-    if not entries:
-        print(_paint("  No activity yet. Try a translated command to begin the journey!", DIM_COLOR, dim=True))
-        return
-    max_value = entries[0][1]
-    for key, count in entries:
-        label = label_fn(key)
-        color = color_fn(key)
-        line = _bar_line(label, count, max_value, total, bar_width, color)
-        print(line)
-
-
-def _print_compact_table(entries: Sequence[str], indent: str = "    ") -> None:
-    if not entries:
-        print(f"{indent}(none recorded.)")
-        return
-    width = _terminal_width()
-    columns = max(1, min(3, width // 28))
-    rows = (len(entries) + columns - 1) // columns
-    column_widths: List[int] = []
-    for col in range(columns):
-        max_len = 0
-        for row in range(rows):
-            idx = row * columns + col
-            if idx >= len(entries):
-                continue
-            max_len = max(max_len, len(entries[idx]))
-        column_widths.append(max_len)
-    for row in range(rows):
-        parts: List[str] = []
-        for col in range(columns):
-            idx = row * columns + col
-            if idx >= len(entries):
-                continue
-            text = entries[idx]
-            width_hint = column_widths[col]
-            if col < columns - 1:
-                parts.append(text.ljust(width_hint))
-            else:
-                parts.append(text)
-        print(f"{indent}" + "   ".join(parts).rstrip())
-
-
-def _print_language_section(stats: Mapping[str, Any], width: int) -> None:
-    language_counts = stats.get("languages")
-    filtered: Dict[str, int] = {}
-    if isinstance(language_counts, Mapping):
-        for code, value in language_counts.items():
-            if not isinstance(code, str) or code == DEFAULT_LANGUAGE_KEY:
-                continue
-            if isinstance(value, int) and value > 0:
-                filtered[code] = value
-    total = sum(filtered.values())
-    entries = _top_entries(filtered, 6)
-    bar_width = max(10, min(36, width - 48))
-    _section_heading("Language Frequency")
-    _render_metric_table(
-        entries,
-        total=total,
-        bar_width=bar_width,
-        label_fn=_language_label,
-        color_fn=_language_color,
-    )
-
 
 def _foreign_command_totals(stats: Mapping[str, Any]) -> Dict[str, int]:
     counts: Dict[str, int] = {}
@@ -406,6 +276,134 @@ def _print_achievement_summary(achievements_state: Mapping[str, Any]) -> None:
     else:
         print(_paint("You have unlocked every achievement. A legend in every tongue!", COUNTER_COLOR, bold=True))
 
+def _bar_line(
+    label: str,
+    count: int,
+    max_value: int,
+    total: int,
+    bar_width: int,
+    color: str,
+) -> str:
+    safe_max = max_value if max_value > 0 else max(count, 1)
+    ratio = count / safe_max if safe_max else 0.0
+    filled = int(round(ratio * bar_width))
+    if count > 0:
+        filled = max(1, min(bar_width, filled))
+    empty = max(0, bar_width - filled)
+    bar = ("█" * filled) + (" " * empty)
+    label_field = 18
+    label_text = label if len(label) <= label_field else label[: label_field - 1] + "…"
+    label_text = label_text.ljust(label_field)
+    styled_label = _paint(label_text, color, bold=True)
+    colored_bar = _paint(bar, color)
+    count_text = _paint(_format_number(count), COUNTER_COLOR, bold=True)
+    percent = (count / total * 100) if total else 0.0
+    percent_text = _paint(f"{percent:5.1f}%", DIM_COLOR, dim=True)
+    return f"  {styled_label} {colored_bar} {count_text:>8} {percent_text}"
+
+
+def _render_metric_table(
+    entries: List[tuple[str, int]],
+    *,
+    total: int,
+    bar_width: int,
+    label_fn,
+    color_fn,
+) -> None:
+    if not entries:
+        print(_paint("  No activity yet. Try a translated command to begin the journey!", DIM_COLOR, dim=True))
+        return
+    max_value = entries[0][1]
+    for key, count in entries:
+        label = label_fn(key)
+        color = color_fn(key)
+        line = _bar_line(label, count, max_value, total, bar_width, color)
+        print(line)
+
+
+def _print_compact_table(entries: Sequence[str], indent: str = "    ") -> None:
+    if not entries:
+        print(f"{indent}(none recorded.)")
+        return
+    width = _terminal_width()
+    columns = max(1, min(3, width // 28))
+    rows = (len(entries) + columns - 1) // columns
+    column_widths: List[int] = []
+    for col in range(columns):
+        max_len = 0
+        for row in range(rows):
+            idx = row * columns + col
+            if idx >= len(entries):
+                continue
+            max_len = max(max_len, len(entries[idx]))
+        column_widths.append(max_len)
+    for row in range(rows):
+        parts: List[str] = []
+        for col in range(columns):
+            idx = row * columns + col
+            if idx >= len(entries):
+                continue
+            text = entries[idx]
+            width_hint = column_widths[col]
+            if col < columns - 1:
+                parts.append(text.ljust(width_hint))
+            else:
+                parts.append(text)
+        print(f"{indent}" + "   ".join(parts).rstrip())
+
+
+def _print_language_section(stats: Mapping[str, Any], width: int) -> None:
+    language_counts = stats.get("languages")
+    filtered: Dict[str, int] = {}
+    if isinstance(language_counts, Mapping):
+        for code, value in language_counts.items():
+            if not isinstance(code, str) or code == DEFAULT_LANGUAGE_KEY:
+                continue
+            if isinstance(value, int) and value > 0:
+                filtered[code] = value
+    total = sum(filtered.values())
+    entries = _top_entries(filtered, 6)
+    bar_width = max(10, min(36, width - 48))
+    _section_heading("Language Frequency")
+    _render_metric_table(
+        entries,
+        total=total,
+        bar_width=bar_width,
+        label_fn=_language_label,
+        color_fn=_language_color,
+    )
+
+def _banner(title: str) -> None:
+    span = len(title) + 4
+    top = "╔" + "═" * span + "╗"
+    middle = f"║  {title}  ║"
+    bottom = "╚" + "═" * span + "╝"
+    print(_paint(top, SECTION_COLOR, bold=True))
+    print(_paint(middle, SECTION_COLOR, bold=True))
+    print(_paint(bottom, SECTION_COLOR, bold=True))
+
+
+def _section_heading(title: str) -> None:
+    print()
+    print(_paint(title, SECTION_COLOR, bold=True))
+
+
+def _top_entries(mapping: Any, limit: int) -> List[tuple[str, int]]:
+    if not isinstance(mapping, Mapping):
+        return []
+    items: List[tuple[str, int]] = []
+    for key, value in mapping.items():
+        if not isinstance(key, str):
+            continue
+        if isinstance(value, int) and value > 0:
+            items.append((key, value))
+    items.sort(key=lambda pair: pair[1], reverse=True)
+    return items[:limit]
+
+
+def _language_color(code: str) -> str:
+    return LANGUAGE_COLORS.get(code, SECTION_COLOR)
+
 
 def _print_achievement_showcase(achievements_state: Mapping[str, Any]) -> None:
     unlocked, locked = _partition_achievements(achievements_state)
@@ -442,11 +440,24 @@ def _print_achievement_showcase(achievements_state: Mapping[str, Any]) -> None:
             print(_paint(f"    {line}", LOCKED_FG_COLOR, bg=LOCKED_BG_COLOR))
         print()
 
+def _display_name(code: str) -> str:
+    return LANGUAGE_NAMES.get(code.lower(), code)
 
-def _print_welcome(cfg: TranslationConfig) -> None:
+
+def _animation_disabled_by_env() -> bool:
+    value = os.environ.get(_ANIMATION_DISABLE_ENV, "0")
+    if value in _TRUTHY:
+        return True
+    # Backward-compatible alias
+    legacy = os.environ.get("GLOBAL_GIT_DISABLE_ANIMATION")
+    return bool(legacy and legacy in _TRUTHY)
+
+
+def _print_welcome(cfg: TranslationConfig, animation_played: bool) -> None:
     active = ", ".join(cfg.active_languages) if cfg.active_languages else "none"
-    print(ASCII_GLOBE.rstrip())
-    print()
+    if not animation_played:
+        print(ASCII_GLOBE.rstrip())
+        print()
     print("Finally, you can use Git commands in Spanish/French/British/etc. without your computer yelling at you")
     print()
     print(f"Active languages: {active}")
@@ -544,6 +555,11 @@ def _build_parser() -> argparse.ArgumentParser:
         prog="gitglobal",
         description="Manage global-git's language configuration.",
     )
+    parser.add_argument(
+        "--no-animation",
+        action="store_true",
+        help="Skip the startup globe animation (env: GLOBAL_GIT_NO_ANIMATION=1).",
+    )
     subparsers = parser.add_subparsers(dest="command")
 
     show_parser = subparsers.add_parser("show", help="Display translations for languages.")
@@ -582,13 +598,19 @@ def main(argv: Sequence[str] | None = None) -> int:
     if localized:
         return _print_language_details([localized], cfg)
 
-    if not args:
-        _print_welcome(cfg)
-        return 0
-
     parser = _build_parser()
     namespace = parser.parse_args(args)
     command = namespace.command
+
+    if command is None:
+        animation_disabled = _animation_disabled_by_env() or getattr(namespace, "no_animation", False)
+        animation_played = False
+        if not animation_disabled:
+            animation_played = show_globe_animation()
+            if animation_played:
+                print()
+        _print_welcome(cfg, animation_played)
+        return 0
 
     if command == "show":
         if getattr(namespace, "all", False):
@@ -653,7 +675,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             _print_achievement_showcase(achievements_state)
         return 0
 
-    _print_welcome(cfg)
+    _print_welcome(cfg, False)
     return 0
 
 
