@@ -1,11 +1,27 @@
 from __future__ import annotations
 
+import codecs
+import errno
 import locale
 import os
+import select
+import signal
 import shutil
 import subprocess
 import sys
 from typing import Iterable, List, Mapping, Optional, Sequence, TextIO
+
+try:  # pragma: no cover - platform dependent fallback
+    import pty  # type: ignore
+except ImportError:  # pragma: no cover
+    pty = None  # type: ignore
+
+try:  # pragma: no cover - platform dependent fallback
+    import termios  # type: ignore
+    import tty  # type: ignore
+except ImportError:  # pragma: no cover
+    termios = None  # type: ignore
+    tty = None  # type: ignore
 
 from .achievements import ACHIEVEMENT_LOOKUP, newly_earned_achievements
 from .config import load_config
@@ -303,23 +319,10 @@ def main() -> int:
             if ran_git:
                 _post_git_invocation(translated, translation)
 
-    proc: Optional[subprocess.Popen[bytes]] = None
     ran_git = True
     try:
-        proc = subprocess.Popen(
-            [exec_path, *translated],
-            env=env,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        stdout_data, stderr_data = proc.communicate()
-        _emit_translated(stdout_data, sys.stdout, output_map)
-        _emit_translated(stderr_data, sys.stderr, output_map)
-        return proc.returncode
-    except KeyboardInterrupt:
-        if proc is not None:
-            proc.kill()
-        return 130
+        exit_code = _run_git_with_output_translation(exec_path, translated, env, output_map)
+        return exit_code
     finally:
         if ran_git:
             _post_git_invocation(translated, translation)
@@ -346,6 +349,205 @@ def _emit_translated(data: Optional[bytes], stream: TextIO, replacements: Mappin
         return
     translated = translate_output_text(text, replacements)
     stream.write(translated)
+    stream.flush()
+
+
+def _run_git_with_output_translation(
+    exec_path: str,
+    args: Sequence[str],
+    env: Mapping[str, str],
+    output_map: Mapping[str, str],
+) -> int:
+    if _should_use_pty(output_map):
+        return _run_git_via_pty(exec_path, args, env, output_map)
+    return _run_git_via_pipes(exec_path, args, env, output_map)
+
+
+def _should_use_pty(output_map: Mapping[str, str]) -> bool:
+    if not output_map:
+        return False
+    if pty is None or termios is None or tty is None:
+        return False
+    try:
+        if not sys.stdout.isatty():
+            return False
+    except Exception:
+        return False
+    try:
+        if not sys.stdin.isatty():
+            return False
+    except Exception:
+        return False
+    return True
+
+
+def _run_git_via_pipes(
+    exec_path: str,
+    args: Sequence[str],
+    env: Mapping[str, str],
+    output_map: Mapping[str, str],
+) -> int:
+    proc: Optional[subprocess.Popen[bytes]] = None
+    try:
+        proc = subprocess.Popen(
+            [exec_path, *args],
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        stdout_data, stderr_data = proc.communicate()
+    except KeyboardInterrupt:
+        if proc is not None:
+            try:
+                proc.send_signal(signal.SIGINT)
+            except Exception:
+                proc.kill()
+            proc.wait()
+        return 130
+
+    _emit_translated(stdout_data, sys.stdout, output_map)
+    _emit_translated(stderr_data, sys.stderr, output_map)
+    return proc.returncode if proc else 1
+
+
+def _run_git_via_pty(
+    exec_path: str,
+    args: Sequence[str],
+    env: Mapping[str, str],
+    output_map: Mapping[str, str],
+) -> int:
+    assert pty is not None and termios is not None and tty is not None
+
+    master_fd: Optional[int] = None
+    slave_fd: Optional[int] = None
+    try:
+        master_fd, slave_fd = pty.openpty()
+        proc = subprocess.Popen(
+            [exec_path, *args],
+            env=env,
+            stdin=slave_fd,
+            stdout=slave_fd,
+            stderr=slave_fd,
+            close_fds=True,
+        )
+    except Exception:
+        if master_fd is not None:
+            os.close(master_fd)
+        if slave_fd is not None:
+            os.close(slave_fd)
+        raise
+    finally:
+        if slave_fd is not None:
+            os.close(slave_fd)
+
+    return _pump_pty_output(master_fd, proc, output_map)
+
+
+def _pump_pty_output(master_fd: int, proc: subprocess.Popen[bytes], output_map: Mapping[str, str]) -> int:
+    assert termios is not None and tty is not None
+
+    stdout_stream = sys.stdout
+    encoding = _preferred_encoding(stdout_stream)
+    decoder = codecs.getincrementaldecoder(encoding)(errors="replace")
+    text_buffer = ""
+    max_key_length = max((len(key) for key in output_map if key), default=0)
+    tail_keep = max(0, max_key_length - 1)
+
+    stdin_fd = _safe_tty_fileno(sys.stdin)
+    old_attrs = None
+    if stdin_fd is not None:
+        try:
+            old_attrs = termios.tcgetattr(stdin_fd)
+            tty.setcbreak(stdin_fd)
+        except Exception:
+            old_attrs = None
+            stdin_fd = None
+
+    try:
+        while True:
+            read_fds = [master_fd]
+            if stdin_fd is not None:
+                read_fds.append(stdin_fd)
+            try:
+                ready, _, _ = select.select(read_fds, [], [])
+            except InterruptedError:
+                continue
+
+            if master_fd in ready:
+                try:
+                    chunk = os.read(master_fd, 4096)
+                except OSError as exc:
+                    if exc.errno == errno.EIO:
+                        chunk = b""
+                    else:
+                        raise
+                if not chunk:
+                    break
+                decoded = decoder.decode(chunk)
+                if decoded:
+                    text_buffer += decoded
+                    text_buffer = _flush_ready_buffer(text_buffer, tail_keep, output_map, stdout_stream)
+
+            if stdin_fd is not None and stdin_fd in ready:
+                try:
+                    data = os.read(stdin_fd, 1024)
+                except OSError:
+                    data = b""
+                if not data:
+                    stdin_fd = None
+                else:
+                    os.write(master_fd, data)
+
+        remaining = decoder.decode(b"", final=True)
+        if remaining:
+            text_buffer += remaining
+        if text_buffer:
+            _write_translated(text_buffer, output_map, stdout_stream)
+
+    except KeyboardInterrupt:
+        proc.send_signal(signal.SIGINT)
+        proc.wait()
+        return 130
+    finally:
+        if old_attrs is not None and stdin_fd is not None:
+            termios.tcsetattr(stdin_fd, termios.TCSADRAIN, old_attrs)
+        os.close(master_fd)
+
+    return proc.wait()
+
+
+def _safe_tty_fileno(stream: TextIO) -> Optional[int]:
+    try:
+        if not stream.isatty():
+            return None
+        return stream.fileno()
+    except Exception:
+        return None
+
+
+def _flush_ready_buffer(
+    buffer: str,
+    tail_keep: int,
+    output_map: Mapping[str, str],
+    stream: TextIO,
+) -> str:
+    if not buffer:
+        return buffer
+    if tail_keep:
+        emit_length = max(0, len(buffer) - tail_keep)
+    else:
+        emit_length = len(buffer)
+    if emit_length <= 0:
+        return buffer
+
+    emit_text = buffer[:emit_length]
+    _write_translated(emit_text, output_map, stream)
+    return buffer[emit_length:]
+
+
+def _write_translated(text: str, output_map: Mapping[str, str], stream: TextIO) -> None:
+    transformed = translate_output_text(text, output_map)
+    stream.write(transformed)
     stream.flush()
 
 

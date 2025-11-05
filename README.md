@@ -51,6 +51,8 @@ The dedicated `gitglobal` helper lets you explore and control language support:
 - `gitglobal languages` — list every language and highlight the active ones.
 - `gitglobal show` — display the command/flag mappings for the currently active languages.
 - `gitglobal switch LANGUAGE` — activate a language.
+- `gitglobal switch core` — return to the default English-only git experience.
+- `gitglobal switch none` — disable all translations temporarily.
 - `gitglobal all` — enable every available language.
 - `gitglobal --help` — help command for gitglobal.
 
