@@ -124,16 +124,4 @@ PRs welcome! Want to add more languages, commands, or make git even more delight
 
 No gatekeeping here—whether you're a native speaker or just learning, all contributions are válidas.
 
-## License
 
-MIT or whatever. Just don't be weird about it.
-
-## Credits
-
-Created during a "matcha time" break by people who were waiting for tests to run and decided to vibe code instead.
-
----
-
-*¿Preguntas? ¿Problemas? ¿Quieres agregar más idiomas?* Open an issue or PR. We'll probably respond between test runs.
-
-**Nota:** This is a real project that actually works, not just a meme. Probably. We think. (It will be once we finish it.)
