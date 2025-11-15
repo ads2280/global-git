@@ -10,6 +10,7 @@ CONFIG_DIR = os.path.join(os.path.expanduser("~"), ".config", "global-git")
 STATE_PATH = os.path.join(CONFIG_DIR, "state.json")
 
 DEFAULT_LANGUAGE_KEY = "__core__"
+DISABLED_LANGUAGE_MARKER = "__none__"
 
 
 def _now_timestamp() -> str:
@@ -88,21 +89,47 @@ def load_active_languages(available_codes: Iterable[str]) -> Tuple[str, ...]:
     saved = payload.get("active_languages", [])
     if isinstance(saved, list):
         normalized: list[str] = []
+        disable_requested = False
         for entry in saved:
             if not isinstance(entry, str):
                 continue
-            lookup = available_set.get(entry.lower())
+            lowered = entry.lower()
+            if lowered == DISABLED_LANGUAGE_MARKER:
+                disable_requested = True
+                continue
+            if lowered == DEFAULT_LANGUAGE_KEY:
+                if DEFAULT_LANGUAGE_KEY not in normalized:
+                    normalized.append(DEFAULT_LANGUAGE_KEY)
+                continue
+            lookup = available_set.get(lowered)
             if lookup and lookup not in normalized:
                 normalized.append(lookup)
+        if disable_requested and not normalized:
+            return tuple()
         if normalized:
             return tuple(normalized)
+        if saved:
+            # If state existed but nothing matched, treat it as an explicit opt-out.
+            return tuple()
 
     return tuple(available)
 
 
 def save_active_languages(codes: Sequence[str]) -> None:
     state = _load_state()
-    ordered = _unique_ordered(code.lower() for code in codes if code)
+    if not codes:
+        state["active_languages"] = [DISABLED_LANGUAGE_MARKER]
+        _write_state(state)
+        return
+
+    ordered = _unique_ordered(
+        (DEFAULT_LANGUAGE_KEY if str(code).lower() == DEFAULT_LANGUAGE_KEY else str(code).lower())
+        for code in codes
+        if code
+    )
+    if DEFAULT_LANGUAGE_KEY in ordered and len(ordered) > 1:
+        # Keep the core marker last for readability
+        ordered = [code for code in ordered if code != DEFAULT_LANGUAGE_KEY] + [DEFAULT_LANGUAGE_KEY]
     state["active_languages"] = ordered
     _write_state(state)
 

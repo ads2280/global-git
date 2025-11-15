@@ -10,7 +10,18 @@ from typing import Any, Dict, Iterable, List, Mapping, Sequence
 from .achievements import ACHIEVEMENTS, AchievementDefinition
 from .config import LanguageDefinition, TranslationConfig, load_config
 from .globe_animation import show_globe_animation
-from .state import DEFAULT_LANGUAGE_KEY, load_usage_stats, save_active_languages, load_achievements_state
+from .nancy_ned_animation import (
+    play_duo_animation,
+    play_nancy_animation,
+    play_ned_animation,
+)
+from .state import (
+    DEFAULT_LANGUAGE_KEY,
+    DISABLED_LANGUAGE_MARKER,
+    load_usage_stats,
+    save_active_languages,
+    load_achievements_state,
+)
 
 
 ASCII_GLOBE = r"""
@@ -61,6 +72,9 @@ LANGUAGE_COLORS = {
     "en-gb": "38;5;33",
     DEFAULT_LANGUAGE_KEY: "38;5;246",
 }
+
+DEFAULT_LANGUAGE_ALIASES = ("core", "english", "en", "en-us", "default")
+DISABLE_LANGUAGE_ALIASES = ("none", "off", "disable", "disabled")
 
 LOCKED_FG_COLOR = "38;5;250"
 LOCKED_BG_COLOR = "48;5;236"
@@ -454,7 +468,7 @@ def _animation_disabled_by_env() -> bool:
 
 
 def _print_welcome(cfg: TranslationConfig, animation_played: bool) -> None:
-    active = ", ".join(cfg.active_languages) if cfg.active_languages else "none"
+    active = _format_language_summary(cfg.active_languages)
     if not animation_played:
         print(ASCII_GLOBE.rstrip())
         print()
@@ -466,6 +480,7 @@ def _print_welcome(cfg: TranslationConfig, animation_played: bool) -> None:
     print("  gitglobal show [code...]   view translations for specific languages")
     print("  gitglobal languages        list available languages")
     print("  gitglobal switch <codes>   choose the languages Git understands")
+    print("  gitglobal switch core      go back to plain old English git")
     print("  gitglobal all              enable every language")
     print()
     print("Tip: try localized help like `gitglobal --ayuda` for Spanish translations.")
@@ -476,12 +491,18 @@ def _language_lookup(cfg: TranslationConfig) -> Dict[str, str]:
     for code in cfg.languages.keys():
         lookup[code.lower()] = code
         lookup[_display_name(code).lower()] = code
+    lookup[DEFAULT_LANGUAGE_KEY] = DEFAULT_LANGUAGE_KEY
+    for alias in DEFAULT_LANGUAGE_ALIASES:
+        lookup[alias] = DEFAULT_LANGUAGE_KEY
+    for alias in DISABLE_LANGUAGE_ALIASES:
+        lookup[alias] = DISABLED_LANGUAGE_MARKER
     return lookup
 
 
 def _resolve_language_codes(tokens: Sequence[str], cfg: TranslationConfig) -> List[str]:
     lookup = _language_lookup(cfg)
     resolved: List[str] = []
+    disable_requested = False
     for token in tokens:
         key = token.lower()
         if key == "all":
@@ -489,8 +510,15 @@ def _resolve_language_codes(tokens: Sequence[str], cfg: TranslationConfig) -> Li
         if key not in lookup:
             raise ValueError(f"Unknown language '{token}'.")
         code = lookup[key]
+        if code == DISABLED_LANGUAGE_MARKER:
+            disable_requested = True
+            continue
         if code not in resolved:
             resolved.append(code)
+    if disable_requested:
+        if resolved:
+            raise ValueError("Cannot combine 'none' with specific languages.")
+        return []
     return resolved
 
 
@@ -546,8 +574,13 @@ def _print_languages(cfg: TranslationConfig) -> None:
 
 
 def _print_status(active_languages: Sequence[str]) -> None:
-    active = ", ".join(active_languages) if active_languages else "none"
-    print(f"Active languages: {active}")
+    print(f"Active languages: {_format_language_summary(active_languages)}")
+
+
+def _format_language_summary(codes: Sequence[str]) -> str:
+    if not codes:
+        return "none"
+    return ", ".join(_language_label(code) for code in codes)
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -569,12 +602,30 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("languages", help="List all known languages.")
 
     switch_parser = subparsers.add_parser("switch", help="Select which languages are active.")
-    switch_parser.add_argument("codes", nargs="*", help="Language codes or names.")
+    switch_parser.add_argument(
+        "codes",
+        nargs="*",
+        help="Language codes or names (use 'core' for English-only, 'none' to disable translations).",
+    )
     switch_parser.add_argument("--all", action="store_true", help="Activate every language.")
 
     subparsers.add_parser("all", help="Activate every language.")
     subparsers.add_parser("status", help="Show the current language selection.")
     subparsers.add_parser("stats", help="Display your GitGlobal usage dashboard.")
+    nancy_parser = subparsers.add_parser(
+        "nancy",
+        help="Watch Nancy give a friendly gitglobal wave.",
+    )
+    nancy_parser.add_argument(
+        "companion",
+        nargs="?",
+        choices=["ned"],
+        help="Invite Ned along for a duo performance (use: gitglobal nancy ned).",
+    )
+    subparsers.add_parser(
+        "ned",
+        help="Bring Ned onto the stage for a solo.",
+    )
     achievements_parser = subparsers.add_parser(
         "achievements",
         help="Step into an interactive gallery of your localized milestones.",
@@ -631,6 +682,18 @@ def main(argv: Sequence[str] | None = None) -> int:
     if command == "stats":
         stats = load_usage_stats()
         _print_stats_dashboard(stats, cfg)
+        return 0
+
+    if command == "nancy":
+        companion = getattr(namespace, "companion", None)
+        if companion == "ned":
+            play_duo_animation()
+        else:
+            play_nancy_animation()
+        return 0
+
+    if command == "ned":
+        play_ned_animation()
         return 0
 
     if command == "switch":
